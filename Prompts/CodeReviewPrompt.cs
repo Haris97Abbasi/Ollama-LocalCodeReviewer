@@ -12,14 +12,23 @@ public static class CodeReviewPrompt
         - Report each distinct problem once.
         - Keep every explanation and suggested fix concise and actionable (one to three sentences).
 
-        Focus on:
-        - correctness and bugs
-        - security (including hard-coded secrets and injection)
-        - null handling
-        - exception handling
-        - performance
+        Go through the file one method at a time and check each of these:
+        - correctness and bugs: code that can throw or return a wrong result at runtime
+        - security: hard-coded secrets, injection, unsafe handling of untrusted input
+        - null handling: values that may be null and are used without a check, such as the result of
+          FirstOrDefault, a lookup, or a parameter
+        - input validation: public method parameters that are used without being validated
+        - exception handling: empty or overly broad catch blocks, swallowed exceptions
+        - performance: the same IEnumerable enumerated more than once, needless work inside loops
         - maintainability
         - obvious missing test cases
+
+        Choosing a category:
+        - Bug: can throw or produce a wrong result at runtime (null dereference, index out of range, bad logic)
+        - Security: exposes secrets or data, or can be abused by an attacker
+        - Performance: wastes time or memory
+        - Code Smell or Maintainability: works, but is fragile or hard to change
+        - Testing: an important case that clearly needs a test
 
         Respond with a single JSON object and nothing else, in this shape:
         {
