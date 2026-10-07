@@ -1,3 +1,4 @@
+using OfflineDotNetCodeReviewer.Models;
 using OfflineDotNetCodeReviewer.Services;
 
 const int ExitInvalidInput = 1;
@@ -53,8 +54,7 @@ try
 {
     var result = await reviewService.ReviewAsync(fileName, sourceCode);
 
-    Console.WriteLine($"Summary: {result.Summary}");
-    Console.WriteLine($"Issues: {result.Issues.Count}");
+    PrintReport(fileName, result);
     return 0;
 }
 catch (OllamaException ex)
@@ -67,3 +67,33 @@ catch (OllamaException ex)
     Console.Error.WriteLine($"     If it is missing, run 'ollama pull {OllamaCodeReviewService.Model}'.");
     return ExitReviewFailed;
 }
+
+static void PrintReport(string fileName, CodeReviewResult result)
+{
+    Console.WriteLine("OFFLINE .NET CODE REVIEW");
+    Console.WriteLine("========================");
+    Console.WriteLine($"Model: {OllamaCodeReviewService.Model}");
+    Console.WriteLine($"File: {fileName}");
+    Console.WriteLine();
+    Console.WriteLine($"Summary: {result.Summary}");
+    Console.WriteLine();
+    Console.WriteLine($"Issues: {result.Issues.Count}");
+
+    foreach (var issue in result.Issues.OrderBy(issue => SeverityRank(issue.Severity)))
+    {
+        Console.WriteLine();
+        Console.WriteLine($"[{issue.Severity.ToUpperInvariant()}] {issue.Category}");
+        Console.WriteLine($"  Explanation: {issue.Explanation}");
+        Console.WriteLine($"  Suggested fix: {issue.SuggestedFix}");
+    }
+}
+
+// Most severe first; anything unrecognised goes last.
+static int SeverityRank(string severity) => severity.ToUpperInvariant() switch
+{
+    "CRITICAL" => 0,
+    "HIGH" => 1,
+    "MEDIUM" => 2,
+    "LOW" => 3,
+    _ => 4
+};
