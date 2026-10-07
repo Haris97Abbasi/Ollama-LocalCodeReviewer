@@ -50,7 +50,7 @@ public sealed class OllamaCodeReviewService : ICodeReviewService, IDisposable
     private readonly HttpClient _http = new()
     {
         BaseAddress = new Uri(BaseUrl),
-        Timeout = TimeSpan.FromMinutes(5)
+        Timeout = TimeSpan.FromMinutes(10)
     };
 
     public async Task<CodeReviewResult> ReviewAsync(string fileName, string sourceCode, CancellationToken ct = default)
